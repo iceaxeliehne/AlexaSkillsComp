@@ -1,0 +1,21 @@
+follow these steps to add your lambda function through the aws console
+
+1. log into the 2pialexa account
+
+2. make sure your region is set to 'N. Virginia'. See top right hand corner.
+
+3. go to services->lambda->functions
+
+4. click 'create function'
+
+5. click 'blueprints' and search for 'alexa'. Choose any alexa blueprint that uses 'nodejs' and click 'configure'
+
+6. Give your function a name and select role from existing choose 'MyLambdaRoleForAlexaSkill' and click 'create function'
+
+7. copy the example lambda code from git and paste it into 'index.js' in the lambda console
+
+8. add a trigger to your lambda function. under the 'Add Triggers' section choos 'Alexa Skills Kit'.
+
+9. under 'Configure Trigger' paste in your skill id from the alexa developer console and press 'Add'
+
+10. You can now customise your code. Don't forget to change the 'DbTable' const to 'your table name'.

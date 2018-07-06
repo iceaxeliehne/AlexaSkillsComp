@@ -1,0 +1,74 @@
+{
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "tech support",
+            "intents": [
+                {
+                    "name": "AMAZON.FallbackIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.CancelIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.HelpIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.StopIntent",
+                    "samples": []
+                },
+                {
+                    "name": "BeginChecklistIntent",
+                    "slots": [],
+                    "samples": [
+                        "how do i fix my computer",
+                        "what is wrong with this computer",
+                        "what is wrong with this stupid computer",
+                        "what could be wrong with my computer",
+                        "tell me what's wrong with my computer",
+                        "please give me a support tech list",
+                        "please give me a support list",
+                        "can you give me a tech support list",
+                        "tech list",
+                        "tech support list",
+                        "can you give me a support check list",
+                        "computer check list",
+                        "support list",
+                        "check list",
+                        "list",
+                        "support check list",
+                        "i'm having trouble with my computer begin support check list"
+                    ]
+                },
+                {
+                    "name": "AnswerIntent",
+                    "slots": [
+                        {
+                            "name": "Response",
+                            "type": "AMAZON.LITERAL"
+                        }
+                    ],
+                    "samples": [
+                        "my problem is {oh my god my computer really sucks i cant work it out | Response}",
+                        "my computer is {broken | Response}",
+                        "is {there anything I can do|Response}",
+                        "the problem is {my screen is frozen| Response}",
+                        "problem is {i can't click anything|Response}",
+                        "my problem is {the computer won't start| Response}"
+                    ]
+                },
+                {
+                    "name": "AMAZON.YesIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.NoIntent",
+                    "samples": []
+                }
+            ],
+            "types": []
+        }
+    }
+}

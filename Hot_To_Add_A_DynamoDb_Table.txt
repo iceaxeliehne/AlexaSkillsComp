@@ -1,0 +1,15 @@
+follow these steps to add a DynamoDb table using the aws console and connect it to your lambda code
+
+1. log into the 2pialexa account
+
+2. make sure your region is set to 'N. Virginia'. See top right hand corner.
+
+3. go to services->DynamoDb and click 'Create Table'
+
+4. give your table a name that relates to your skill. eg. 'IT_SUPPORT_TABLE'
+
+5. give your table a primary partitian key. Choosing what to use as your priamry key is important! Primary keys cannot be duplicated in the data. For example if you are logging incidents and a user may want to store many incidents, using the user id or name as the primary key will not work and it will be better to use the session id. However if your are storing data for individual cows in a dairy, using the cows name or id number is correct.
+
+6. click 'Create Table'. Ignore the error warning and click 'Continue to table'
+
+7. In your lambda function change the value of the const DbTable to 'your table name'.
