@@ -13,3 +13,13 @@ follow these steps to add a DynamoDb table using the aws console and connect it 
 6. click 'Create Table'. Ignore the error warning and click 'Continue to table'
 
 7. In your lambda function change the value of the const DbTable to 'your table name'.
+
+
+
+
+
+-------- Helpful resources ---------
+aws.educate - 
+
+
+documentation - https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html

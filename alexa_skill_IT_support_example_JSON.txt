@@ -66,6 +66,19 @@
                 {
                     "name": "AMAZON.NoIntent",
                     "samples": []
+                },
+                {
+                    "name": "RetrieveLastIntent",
+                    "slots": [],
+                    "samples": [
+                        "what was the most recent issue",
+                        "what was the latest issue",
+                        "give me the most recent problem",
+                        "what is the latest issue",
+                        "what was the last problem",
+                        "what was the last issue reported",
+                        "get me the last reported issue"
+                    ]
                 }
             ],
             "types": []

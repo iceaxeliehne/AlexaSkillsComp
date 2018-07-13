@@ -271,6 +271,77 @@ const handlers = {
             }
         });
     },
+    'RetrieveLastIntent': function () {
+        const { userId } = this.event.session.user;
+        const this_object = this;
+        
+        var params = {
+            TableName: DbTable,
+            FilterExpression: "#u = :u",
+            ExpressionAttributeNames: {
+                "#u": "userId",
+            },
+            ExpressionAttributeValues: { ":u": userId }
+        
+        };
+        var my_result = docClient.scan(params, onScan);
+        console.log('scan completed');
+        //console.log(JSON.stringify(my_result));
+        
+        
+        function onScan(err,data) {
+            var my_result = {};
+            if (err) {
+                console.error("Unable to scan item. Error JSON:", JSON.stringify(err, null, 2));
+            } else {
+                console.log('data retreived');
+                // sort the reults to find the largest CreationTimestamp
+                
+                data.Items.forEach(function(itemdata) {
+                    console.log('testing');
+                    console.log(JSON.stringify(itemdata.CreationTimestamp));
+                    const timestamp = itemdata.CreationTimestamp;
+                    if (timestamp != undefined && (my_result.CreationTimestamp == undefined || timestamp > my_result.CreationTimestamp)) {
+                        my_result = itemdata;
+                    }
+                });
+                
+                
+                if (typeof data.LastEvaluatedKey != "undefined") {
+                    console.log("Scanning for more...");
+                    params.ExclusiveStartKey = data.LastEvaluatedKey;
+                    var new_result = docClient.scan(params, onScan);
+                    if (new_result.CreationTimestamp != undefined && (my_result.CreationTimestamp == undefined || my_result.CreationTimestamp < new_result.CreationTimestamp)) {
+                        my_result = new_result;
+                        
+                    }
+                }
+            }
+            const DB_get_params = {
+                TableName: DbTable,
+                Key: {
+                    userId: my_result.userId,
+                    sessionId: my_result.sessionId
+                }
+            };
+            console.log(JSON.stringify(DB_get_params));
+            docClient.get(DB_get_params, function(err, data) {
+                if (err) {
+                    console.error("Unable to retreive item. Error JSON:", JSON.stringify(err, null, 2));
+                } else {
+                    //console.log(data);
+                    var response_string = "We have found a record, the issue recorded was...";
+                    response_string += data.Item.ChecklistItem1;
+                    this_object.attributes.speechOutput = response_string;
+                    //this_object.attributes.repromptSpeech = this_object.t(new_item_code);
+                    this_object.response.speak(this_object.attributes.speechOutput);
+                    this_object.emit(':responseReady');
+                }
+            });
+            return my_result;
+        }
+        
+    },
     'AMAZON.HelpIntent': function () {
         this.attributes.speechOutput = this.t('HELP_MESSAGE');
         this.attributes.repromptSpeech = this.t('HELP_REPROMPT');
