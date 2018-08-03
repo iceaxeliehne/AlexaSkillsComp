@@ -86,7 +86,7 @@ const handlers = {
                     // EG. you may want Alexa to say "An error has occured..."
                     this_object.attributes.speechOutput = "An error has occured..."; // this is the responce alexa will say
                     this_object.attributes.repromptSpeech = "An error has occured..."; // this is the reprompt text Alexa will say
-                    this_object.response.speak(this.attributes.speechOutput).listen(this.attributes.repromptSpeech); //this tells alexa to say speechOutput and repromptSpeech
+                    this_object.response.speak(this_object.attributes.speechOutput).listen(this_object.attributes.repromptSpeech); //this tells alexa to say speechOutput and repromptSpeech
                     this_object.emit(':responseReady'); // this line finishes the intent function
 
                 } else { // if the save to the table was successful this block will run
@@ -95,7 +95,7 @@ const handlers = {
                     // Example of Alexa confirming that data is saved.
                     this_object.attributes.speechOutput = "Data saved successfully"; // this is the responce alexa will say
                     this_object.attributes.repromptSpeech = "What would you like to do now?"; // this is the repromp text Alexa will say
-                    this_object.response.speak(this.attributes.speechOutput).listen(this.attributes.repromptSpeech); //this tells alexa to say speechOutput and repromptSpeech
+                    this_object.response.speak(this_object.attributes.speechOutput).listen(this_object.attributes.repromptSpeech); //this tells alexa to say speechOutput and repromptSpeech
                     this_object.emit(':responseReady'); // this line finishes the intent function
                     
                 }
