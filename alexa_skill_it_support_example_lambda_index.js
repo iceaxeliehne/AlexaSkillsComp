@@ -47,7 +47,9 @@ const handlers = {
     'YourIntentName': function () { // change the name to match your intent name
         console.log("Hello World"); // use this for debugging. you can replace "Hello World" with a variable if you need
          if (this.event.request.dialogState !== 'COMPLETED') {
-            this.emit(':delegate');
+            //check for any slots that require specific values
+            var updatedIntent = CheckSpecificValues(this.event.request.intent, ['slot_1','slot_2']); //change these to your slot names
+            this.emit(':delegate', updatedIntent);
         } else {
 
             // create useful variables
@@ -58,7 +60,7 @@ const handlers = {
             
             // read intent slots
             // const 'slot_name' = this.event.request.intents.slots.'slot_name_from_alexa_developer'.value 
-            const responseSlot = this.event.request.intent.slots.Response.value; // this can be repeated for each slot attached to this intent
+            const Slot_1 = GetSlotValue(this.event.request.intent, 'slot_name'); // this can be repeated for each slot attached to this intent
 
             // storing data in table
             // to store data in a table you need to create a DB_put_params array
@@ -107,7 +109,8 @@ const handlers = {
     'YourIntentName2': function () { // change the name to match your intent name
         console.log("Hello World"); // use this for debugging. you can replace "Hello World" with a variable if you need
          if (this.event.request.dialogState !== 'COMPLETED') {
-            this.emit(':delegate');
+            var updatedIntent = CheckSpecificValues(this.event.request.intent, ['slot_1','slot_2']); //change these to your slot names
+            this.emit(':delegate', updatedIntent);
         } else {
 
             // create useful variables
@@ -118,7 +121,7 @@ const handlers = {
             
             // read intent slots
             // const 'slot_name' = this.event.request.intents.slots.'slot_name_from_alexa_developer'.value 
-            const responseSlot = this.event.request.intent.slots.Response.value; // this can be repeated for each slot attached to this intent
+            const Slot_1 = GetSlotValue(this.event.request.intent, 'slot_name'); // this can be repeated for each slot attached to this intent
 
             // retreiving data from table
             // there are 2 ways you may want to retreive data from a table.
@@ -163,7 +166,7 @@ const handlers = {
                     my_result_string += ' There where ' + my_matches.toString() + ' matches found.'; // update the response to include the number of results that matched against the slot value.
                     this_object.attributes.speechOutput = my_result_string; // this is the responce alexa will say
                     this_object.attributes.repromptSpeech = "What would you like to do now?"; // this is the repromp text Alexa will say
-                    this_object.response.speak(this.attributes.speechOutput).listen(this.attributes.repromptSpeech); //this tells alexa to say speechOutput and repromptSpeech
+                    this_object.response.speak(this_object.attributes.speechOutput).listen(this_object.attributes.repromptSpeech); //this tells alexa to say speechOutput and repromptSpeech
                     this_object.emit(':responseReady'); // this line finishes the intent function
                 }
             });
@@ -191,379 +194,14 @@ const handlers = {
                     response_string += data.Item.ChecklistItem1; // this adds the value of the column called 'ChecklistItem1' to the response string.
                     this_object.attributes.speechOutput = response_string; // this is the responce alexa will say
                     this_object.attributes.repromptSpeech = "What would you like to do now?"; // this is the repromp text Alexa will say
-                    this_object.response.speak(this_object.attributes.speechOutput).listen(this.attributes.repromptSpeech); //this tells alexa to say speechOutput and repromptSpeech
+                    this_object.response.speak(this_object.attributes.speechOutput).listen(this_object.attributes.repromptSpeech); //this tells alexa to say speechOutput and repromptSpeech
                     this_object.emit(':responseReady'); // this line finishes the intent function
                 }
             });
         }
         // do not put any code after the calling database functions.
     },
-    'BeginChecklistIntent': function () {
-        console.log("Hello World");
-        //console.log(JSON.stringify(this.event.session)); // uncomment this to view the session data
-        
-        //save the session details
-        const { userId } = this.event.session.user;
-        const { sessionId } = this.event.session;
-        const checklist_item_number = 1;
-        const timestamp = new Date().getTime();
-        
-        const DB_put_params = {
-            TableName: DbTable,
-            Item: {
-                userId: userId,
-                sessionId: sessionId,
-                ChecklistItemNumber: checklist_item_number,
-                CreationTimestamp: timestamp
-            }
-        };
-        
-        docClient.put(DB_put_params, function (err, data) {
-            if (err) {
-                console.error("Unable to put item. Error JSON:", JSON.stringify(err, null, 2));
-            } else {
-                console.log(JSON.stringify(data, null, 2));
-            }
-        });
-
-        this.attributes.speechOutput = this.t('CHECKLIST_ITEM_1');
-        this.attributes.repromptSpeech = this.t('CHECKLIST_ITEM_1');
-        this.response.speak(this.attributes.speechOutput).listen(this.attributes.repromptSpeech);
-        this.emit(':responseReady');
-    },
-    'AnswerIntent': function () {
-        const { userId } = this.event.session.user;
-        const { sessionId } = this.event.session;
-        
-        const responseSlot = this.event.request.intent.slots.Response.value;
-        
-        //make this available in callbacks
-        const this_object = this;
-        
-        const error_response = "An error has occurred..." + this.t('CHECKLIST_ITEM_1');
-        const item_2_response = this.t('CHECKLIST_ITEM_2');
-        
-        //retreive the session data
-        const DB_check_params = {
-            TableName: DbTable,
-            Key: {
-                userId: userId,
-                sessionId: sessionId
-            }
-        };
-        
-        docClient.get(DB_check_params, function(err, data) {
-            if (err) {
-                console.error("Unable to retreive item. Error JSON:", JSON.stringify(err, null, 2));
-            } else {
-                console.log(JSON.stringify(data));
-                const my_item = data["Item"];
-                console.log(my_item);
-                
-                //check that we are answering the correct question
-                if (my_item["ChecklistItemNumber"] != 1) { 
-                    console.log("oops something has happened");  
-                    
-                    this_object.attributes.speechOutput = error_response;
-                    this_object.attributes.repromptSpeech = error_response;
-                    this_object.response.speak(this_object.attributes.speechOutput).listen(this_object.attributes.repromptSpeech);
-                    this_object.emit(':responseReady');
-                } else {
-                    my_item["ChecklistItem1"] = responseSlot;
-                    my_item["ChecklistItemNumber"] += 1;
-                    const DB_put_params = {
-                        TableName: DbTable,
-                        Item: my_item
-                    };
-                    
-                    docClient.put(DB_put_params, function (err, data) {
-                        if (err) {
-                            console.error("Unable to put item. Error JSON:", JSON.stringify(err, null, 2));
-                        } else {
-                            console.log("data saved");
-                            this_object.attributes.speechOutput = item_2_response;
-                            this_object.attributes.repromptSpeech = item_2_response;
-                            this_object.response.speak(this_object.attributes.speechOutput).listen(this_object.attributes.repromptSpeech);
-                            this_object.emit(':responseReady');
-                        }
-                    });
-                }
-            }
-        });
-    },
-    'AMAZON.YesIntent': function () {
-        const { userId } = this.event.session.user;
-        const { sessionId } = this.event.session;
-        var item_code = "CHECKLIST_ITEM_";
-        var new_item_code = "CHECKLIST_ITEM_";
-        
-        //make this available in callbacks
-        const this_object = this;
-        
-        //retreive the session data
-        const DB_check_params = {
-            TableName: DbTable,
-            Key: {
-                userId: userId,
-                sessionId: sessionId
-            }
-        };
-        docClient.get(DB_check_params, function(err, data) {
-            if (err) {
-                console.error("Unable to retreive item. Error JSON:", JSON.stringify(err, null, 2));
-            } else {
-                
-                console.log(JSON.stringify(data));
-                const my_item = data["Item"];
-                console.log(my_item);
-                if (my_item['ChecklistItemNumber'] == 1) {
-                    console.erroe('Wrong item number');
-                    return;
-                }
-                //log answer and ask next question
-                item_code += JSON.stringify(my_item['ChecklistItemNumber']);
-                my_item[item_code] = 'Yes';
-                new_item_code += JSON.stringify(my_item['ChecklistItemNumber'] + 1);
-                //branch off for funny answer on item 5
-                if (my_item['ChecklistItemNumber'] == 5) {
-                    my_item['ChecklistItemNumber'] += 1;
-                    const DB_put_params = {
-                        TableName: DbTable,
-                        Item: my_item
-                    };
-                    docClient.put(DB_put_params, function (err, data) {
-                        if (err) {
-                            console.error("Unable to put item. Error JSON:", JSON.stringify(err, null, 2));
-                        } else {
-                            console.log("data saved");
-                            this_object.attributes.speechOutput = this_object.t('CHECKLIST_ITEM_5a');
-                            this_object.response.speak(this_object.attributes.speechOutput);
-                            this_object.emit(':responseReady');
-                        }
-                    });
-                } else {
-                    my_item['ChecklistItemNumber'] += 1;
-                    const DB_put_params = {
-                        TableName: DbTable,
-                        Item: my_item
-                    };
-                    docClient.put(DB_put_params, function (err, data) {
-                        if (err) {
-                            console.error("Unable to put item. Error JSON:", JSON.stringify(err, null, 2));
-                        } else {
-                            console.log("data saved");
-                            this_object.attributes.speechOutput = this_object.t(new_item_code);
-                            this_object.attributes.repromptSpeech = this_object.t(new_item_code);
-                            this_object.response.speak(this_object.attributes.speechOutput).listen(this_object.attributes.repromptSpeech);
-                            this_object.emit(':responseReady');
-                        }
-                    });
-                }
-                
-            }
-        });
-    },
-    'AMAZON.NoIntent': function () {
-        const { userId } = this.event.session.user;
-        const { sessionId } = this.event.session;
-        var next_item = "CHECKLIST_ITEM_";
-        var new_item_code = "CHECKLIST_ITEM_";
-        
-        //make this available in callbacks
-        const this_object = this;
-        
-        //retreive the session data
-        const DB_check_params = {
-            TableName: DbTable,
-            Key: {
-                userId: userId,
-                sessionId: sessionId
-            }
-        };
-        docClient.get(DB_check_params, function(err, data) {
-            if (err) {
-                console.error("Unable to retreive item. Error JSON:", JSON.stringify(err, null, 2));
-            } else {
-                
-                console.log(JSON.stringify(data));
-                const my_item = data["Item"];
-                console.log(my_item);
-                if (my_item['ChecklistItemNumber'] == 1) {
-                    console.erroe('Wrong item number');
-                    return;
-                }
-                //log answer and ask next question
-                next_item += JSON.stringify(my_item['ChecklistItemNumber']);
-                my_item[next_item] = 'No';
-                new_item_code += JSON.stringify(my_item['ChecklistItemNumber'] + 1);
-                my_item['ChecklistItemNumber'] += 1;
-                
-                const DB_put_params = {
-                    TableName: DbTable,
-                    Item: my_item
-                };
-                docClient.put(DB_put_params, function (err, data) {
-                    if (err) {
-                        console.error("Unable to put item. Error JSON:", JSON.stringify(err, null, 2));
-                    } else {
-                        console.log("data saved");
-                        this_object.attributes.speechOutput = this_object.t(new_item_code);
-                        this_object.attributes.repromptSpeech = this_object.t(new_item_code);
-                        this_object.response.speak(this_object.attributes.speechOutput).listen(this_object.attributes.repromptSpeech);
-                        this_object.emit(':responseReady');
-                    }
-                });
-            }
-        });
-    },
-    'RetrieveLastIntent': function () {
-        const { userId } = this.event.session.user;
-        const this_object = this;
-        
-        var params = {
-            TableName: DbTable,
-            FilterExpression: "#u = :u",
-            ExpressionAttributeNames: {
-                "#u": "userId",
-            },
-            ExpressionAttributeValues: { ":u": userId }
-        
-        };
-        var my_result = docClient.scan(params, onScan);
-        console.log('scan completed');
-        //console.log(JSON.stringify(my_result));
-        
-        
-        function onScan(err,data) {
-            var my_result = {};
-            if (err) {
-                console.error("Unable to scan item. Error JSON:", JSON.stringify(err, null, 2));
-            } else {
-                console.log('data retreived');
-                // sort the reults to find the largest CreationTimestamp
-                
-                data.Items.forEach(function(itemdata) {
-                    console.log('testing');
-                    console.log(JSON.stringify(itemdata.CreationTimestamp));
-                    const timestamp = itemdata.CreationTimestamp;
-                    if (timestamp != undefined && (my_result.CreationTimestamp == undefined || timestamp > my_result.CreationTimestamp)) {
-                        my_result = itemdata;
-                    }
-                });
-                
-                
-                if (typeof data.LastEvaluatedKey != "undefined") {
-                    console.log("Scanning for more...");
-                    params.ExclusiveStartKey = data.LastEvaluatedKey;
-                    var new_result = docClient.scan(params, onScan);
-                    if (new_result.CreationTimestamp != undefined && (my_result.CreationTimestamp == undefined || my_result.CreationTimestamp < new_result.CreationTimestamp)) {
-                        my_result = new_result;
-                        
-                    }
-                }
-            }
-            const DB_get_params = {
-                TableName: DbTable,
-                Key: {
-                    userId: my_result.userId,
-                    sessionId: my_result.sessionId
-                }
-            };
-            console.log(JSON.stringify(DB_get_params));
-            docClient.get(DB_get_params, function(err, data) {
-                if (err) {
-                    console.error("Unable to retreive item. Error JSON:", JSON.stringify(err, null, 2));
-                } else {
-                    //console.log(data);
-                    var response_string = "We have found a record, the issue recorded was...";
-                    response_string += data.Item.ChecklistItem1;
-                    this_object.attributes.speechOutput = response_string;
-                    //this_object.attributes.repromptSpeech = this_object.t(new_item_code);
-                    this_object.response.speak(this_object.attributes.speechOutput);
-                    this_object.emit(':responseReady');
-                }
-            });
-            return my_result;
-        }
-        
-        // docClient.scan(params, onScan);
-        // var count = 0;
-        
-        // function onScan(err, data) {
-        //     if (err) {
-        //         console.error("Unable to scan the table. Error JSON:", JSON.stringify(err, null, 2));
-        //     } else {        
-        //         console.log("Scan succeeded.");
-        //         data.Items.forEach(function(itemdata) {
-        //           console.log("Item :", ++count,JSON.stringify(itemdata));
-        //         });
-        
-        //         // continue scanning if we have more items
-        //         if (typeof data.LastEvaluatedKey != "undefined") {
-        //             console.log("Scanning for more...");
-        //             params.ExclusiveStartKey = data.LastEvaluatedKey;
-        //             docClient.scan(params, onScan);
-        //         }
-        //     }
-        // }
-        
-        
-        
-        //query the database for the larget stored timestamp
-        //need to get all results then sort the array.
-        // const params = {
-        //     TableName: DbTable,
-        //     ProjectionExpression: " #u, #s, CreationTimestamp",
-        //     ExpressionAttributeNames: {
-        //         "#s": "sessionId",
-        //         "#u": "userId"
-        //     },
-        //     ExpressionAttributeValues: { 
-        //         ":s":  "*",
-        //         ":u":  userId
-        //     },
-        //     KeyConditionExpression: "#u = :u AND #s = :s",
-        //     ScanIndexForward: true,
-        // };
-        
-        // docClient.query(params, function(err,data) {
-        //     if (err) {
-        //         console.error("Unable to scan item. Error JSON:", JSON.stringify(err, null, 2));
-        //     } else {
-        //         console.log(data);
-        //         // sort the reults to find the largest CreationTimestamp
-        //         const my_result = {};
-        //         for (var i = 0; i < data['items'].length; i++) {
-        //             const timestamp = data['items'][i]['CreationTimestamp'];
-        //             if (timestamp != null && timestamp > my_result['CreationTimestamp']) {
-        //                 my_result = data['items'][i];
-        //             }
-        //         }
-        //         const DB_get_params = {
-        //             TableName: DbTable,
-        //             Key: {
-        //                 userId: my_result['userId'],
-        //                 sessionId: my_result['LastEvaluatedKey']['sessionId']
-        //             }
-        //         };
-        //         docClient.get(DB_get_params, function(err, data) {
-        //             if (err) {
-        //                 console.error("Unable to retreive item. Error JSON:", JSON.stringify(err, null, 2));
-        //             } else {
-        //                 console.log(data);
-        //                 var response_string = "We have found a record, the issue recorded was...";
-        //                 response_string += data['Item']['ChecklistItem1'];
-        //                 this_object.attributes.speechOutput = response_string;
-        //                 //this_object.attributes.repromptSpeech = this_object.t(new_item_code);
-        //                 this_object.response.speak(this_object.attributes.speechOutput);
-        //                 this_object.emit(':responseReady');
-        //             }
-        //         });
-                
-        //     }
-        // });
-         
-    },
+    
     'AMAZON.HelpIntent': function () {
         this.attributes.speechOutput = this.t('HELP_MESSAGE');
         this.attributes.repromptSpeech = this.t('HELP_REPROMPT');
@@ -600,3 +238,27 @@ exports.handler = function (event, context, callback) {
     alexa.registerHandlers(handlers);
     alexa.execute();
 };
+
+
+function CheckSpecificValues(intent, slot_names) {
+    if (slot_names.length > 0) {
+        slot_names.forEach(function (slot_name, index){
+            console.log("checking slot value for: " + slot_name);
+            //console.log(intent.slots[slot_name].resolutions.resolutionsPerAuthority[0]['status'].code);
+            if (intent.slots[slot_name].hasOwnProperty('resolutions') &&
+                    intent.slots[slot_name].resolutions.resolutionsPerAuthority[0]['status'].code !== 'ER_SUCCESS_MATCH') {
+                intent.slots[slot_name].value = null;
+            }
+        });
+    }
+    return intent;
+}
+
+function GetSlotValue(intent, slot_name) {
+    if (intent.slots[slot_name].hasOwnProperty('resolutions') &&
+            intent.slots[slot_name].resolutions.resolutionsPerAuthority[0]['status'].code !== 'ER_SUCCESS_MATCH') {
+        return intent.slots[slot_name].resolutions.resolutionsPerAuthority[0]['values'].value.name;
+    } else {
+        return intent.slots[slot_name].value;
+    }
+}
