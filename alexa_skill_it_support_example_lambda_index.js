@@ -245,7 +245,8 @@ function CheckSpecificValues(intent, slot_names) {
         slot_names.forEach(function (slot_name, index){
             console.log("checking slot value for: " + slot_name);
             //console.log(intent.slots[slot_name].resolutions.resolutionsPerAuthority[0]['status'].code);
-            if (intent.slots[slot_name].hasOwnProperty('resolutions') &&
+            if (intent.slots.hasOwnProperty(slot_name) && 
+                    intent.slots[slot_name].hasOwnProperty('resolutions') &&
                     intent.slots[slot_name].resolutions.resolutionsPerAuthority[0]['status'].code !== 'ER_SUCCESS_MATCH') {
                 intent.slots[slot_name].value = null;
             }
@@ -255,8 +256,9 @@ function CheckSpecificValues(intent, slot_names) {
 }
 
 function GetSlotValue(intent, slot_name) {
-    if (intent.slots[slot_name].hasOwnProperty('resolutions') &&
-            intent.slots[slot_name].resolutions.resolutionsPerAuthority[0]['status'].code !== 'ER_SUCCESS_MATCH') {
+    if (intent.slots.hasOwnProperty(slot_name) && 
+            intent.slots[slot_name].hasOwnProperty('resolutions') &&
+            intent.slots[slot_name].resolutions.resolutionsPerAuthority[0]['status'].code == 'ER_SUCCESS_MATCH') {
         return intent.slots[slot_name].resolutions.resolutionsPerAuthority[0]['values'].value.name;
     } else {
         return intent.slots[slot_name].value;
